@@ -30,7 +30,7 @@ class _DeviceInfoPageState extends State<DeviceInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Device Info')),
+      appBar: AppBar(title: const Text('Device Info'), centerTitle: true),
       body: StreamBuilder<DataState<DeviceInfo>>(
         stream: _bloc.stream,
         builder: (context, snapshot) {
