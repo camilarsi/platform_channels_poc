@@ -45,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: DeviceInfoCard(),
+        child: DeviceInfoPage(),
       ),
     );
   }

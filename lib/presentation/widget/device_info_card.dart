@@ -1,61 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:platform_channels_definitivo/core/dependencies_injector.dart';
-import 'package:platform_channels_definitivo/core/util/const/loading_indicator.dart';
 import 'package:platform_channels_definitivo/core/util/data_state.dart';
 import 'package:platform_channels_definitivo/domain/entity/device_info.dart';
-import 'package:provider/provider.dart';
+import 'package:platform_channels_definitivo/data/datasource/device_info_datasource.dart';
+import 'package:platform_channels_definitivo/data/repositories/device_info_repository.dart';
+import 'package:platform_channels_definitivo/domain/usecases/get_device_info_usecase.dart';
+import '../bloc/device_info_bloc.dart';
 
-class DeviceInfoCard extends StatelessWidget {
-  const DeviceInfoCard({super.key});
+class DeviceInfoPage extends StatefulWidget {
+  const DeviceInfoPage({super.key});
+
+  @override
+  State<DeviceInfoPage> createState() => _DeviceInfoPageState();
+}
+
+class _DeviceInfoPageState extends State<DeviceInfoPage> {
+  late final DeviceInfoBloc _bloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final dataSource = DeviceInfoDataSource();
+    final repository = DeviceInfoRepository(deviceInfoDatasource: dataSource);
+    final useCase = GetDeviceInfoUseCase(repository: repository);
+
+    _bloc = DeviceInfoBloc(getDeviceInfoUseCase: useCase);
+  }
 
   @override
   Widget build(BuildContext context) {
-    var deviceInfoBloc = context.read<DependenciesInjector>().deviceInfoBloc;
-    return StreamBuilder<DataState<DeviceInfo>>(
-      stream: deviceInfoBloc.stream,
-      builder: (context, snapshot) {
-        if(snapshot.connectionState == ConnectionState.waiting){
-          return UIConstants.loadingIndicator;
-        }
-
-        if (snapshot.hasData) {
-          DataState<DeviceInfo> deviceInfoState = snapshot.data!;
-          if (deviceInfoState.state == StateType.success) {
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Device Info'),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Device Model Info: '),
-                        Text(deviceInfoState.data!.deviceModelInfo.model),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Operating System Version: '),
-                        Text(deviceInfoState.data!.osInfo.version),
-                      ],
-                    ),
-                    /* Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [Text('Batery Level: '), Text('---level---')],
-                    ),*/
-                  ],
-                ),
-              ),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Device Info')),
+      body: StreamBuilder<DataState<DeviceInfo>>(
+        stream: _bloc.stream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data!.state == StateType.loading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.data!.state == StateType.error) {
+            return Center(child: Text('Error: ${snapshot.data!.error}'));
+          } else if (snapshot.data!.state == StateType.success) {
+            final info = snapshot.data!.data!;
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children:
+                  [
+                        Text('OS Version: ${info.osVersion}'),
+                        Text('Model: ${info.deviceModel}'),
+                        Text('Manufacturer: ${info.manufacturer}'),
+                        Text('Brand: ${info.brand}'),
+                        Text('Android ID: ${info.androidId}'),
+                        Text('Battery Level: ${info.batteryLevel}'),
+                        Text('Power Saving Mode: ${info.powerSavingMode}'),
+                        Text('Language: ${info.language}'),
+                        Text('Time Zone: ${info.timeZone}'),
+                      ]
+                      .map(
+                        (e) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: e,
+                        ),
+                      )
+                      .toList(),
             );
-          } else if (deviceInfoState.state == StateType.error) {
-            return Text('${deviceInfoState.error}');
+          } else {
+            return const SizedBox.shrink();
           }
-        }
-        return UIConstants.loadingIndicator;
-      },
+        },
+      ),
     );
   }
 }
