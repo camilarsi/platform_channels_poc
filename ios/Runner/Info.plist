@@ -47,6 +47,8 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
     <string>The App requires access to the photo library.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>The app requires access to save image in the library</string>
     <key>NSCameraUsageDescription</key>
     <string>The App requires access to the camera.</string>
     <key>NSMicrophoneUsageDescription</key>

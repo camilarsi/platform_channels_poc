@@ -29,28 +29,17 @@ class _HomeDrawerState extends State<HomeDrawer> {
   }
 
   Future<void> _onPickImagePressed() async {
-    final status = await Permission.photos.request();
+    final path = await useCase.execute();
 
-    if (status.isGranted) {
-      final path = DependenciesInjector.instance.pickImageUseCase;
-      setState(() {
-        _selectedImage = File(path as String);
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Photo library permission rejected')),
-      );
-    }
-  }
+    final normalizedPath =
+        Platform.isIOS ? path?.replaceFirst('file://', '') : path;
 
-  _onPickImage() async {
-    _onPickImagePressed();
-    final imagePath = await useCase.execute();
-    if (imagePath != null) {
-      setState(() {
-        _selectedImage = File(imagePath);
-      });
-    }
+    print(normalizedPath);
+    final file = File(normalizedPath!);
+
+    setState(() {
+      _selectedImage = file;
+    });
   }
 
   @override
@@ -94,7 +83,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                                 ? Colors.white
                                 : Colors.black54,
                       ),
-                      onPressed: _onPickImage,
+                      onPressed: _onPickImagePressed,
                     ),
                   ],
                 ),
