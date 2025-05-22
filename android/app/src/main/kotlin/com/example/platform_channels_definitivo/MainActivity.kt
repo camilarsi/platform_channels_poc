@@ -1,8 +1,8 @@
 package com.example.platform_channels_definitivo
 
 import android.app.Activity
-import android.content.Context
-import android.content.Intent
+
+import android.content.*
 import android.database.Cursor
 import android.net.Uri
 import android.os.BatteryManager
@@ -16,12 +16,15 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.util.Locale
 import java.util.TimeZone
+import io.flutter.plugin.common.EventChannel
 
 class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "com.example.platform_channels_poc"
     private val IMAGE_PICK_CODE = 1001
     private var pendingResult: MethodChannel.Result? = null
+    private var BATTERY_CHANNEL = "com.example.batteryStream"
+    private var batteryReceiver: BroadcastReceiver? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -62,6 +65,33 @@ class MainActivity : FlutterActivity() {
 
                 else -> result.notImplemented()
             }
+
+            EventChannel(
+                flutterEngine.dartExecutor.binaryMessenger,
+                BATTERY_CHANNEL
+            ).setStreamHandler(
+                object : EventChannel.StreamHandler {
+                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                        batteryReceiver = object : BroadcastReceiver() {
+                            override fun onReceive(context: Context?, intent: Intent?) {
+                                val level =
+                                    intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                                events?.success(level)
+                            }
+                        }
+                        val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                        registerReceiver(batteryReceiver, filter)
+                    }
+
+                    override fun onCancel(arguments: Any?) {
+                        batteryReceiver?.let {
+                            unregisterReceiver(it)
+                            batteryReceiver = null
+                        }
+                    }
+
+                }
+            )
         }
     }
 

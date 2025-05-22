@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       ),
       home: Provider<DependenciesInjector>(
         create: (_) => DependenciesInjector.instance,
-        child: const MyHomePage(title: 'Platform Channels PoC'),
+        child: const MyHomePage(title: 'Device Info'),
       ),
     );
   }

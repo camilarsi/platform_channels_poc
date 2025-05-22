@@ -5,6 +5,7 @@ import 'package:platform_channels_definitivo/data/datasource/device_info_datasou
 import 'package:platform_channels_definitivo/data/repositories/device_info_repository.dart';
 import 'package:platform_channels_definitivo/domain/usecases/get_device_info_usecase.dart';
 import '../bloc/device_info_bloc.dart';
+import 'battery_level_indicator.dart';
 
 class DeviceInfoPage extends StatefulWidget {
   const DeviceInfoPage({super.key});
@@ -30,7 +31,6 @@ class _DeviceInfoPageState extends State<DeviceInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Device Info'), centerTitle: true),
       body: StreamBuilder<DataState<DeviceInfo>>(
         stream: _bloc.stream,
         builder: (context, snapshot) {
@@ -44,12 +44,15 @@ class _DeviceInfoPageState extends State<DeviceInfoPage> {
               padding: const EdgeInsets.all(16),
               children:
                   [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 28.0),
+                          child: BatteryLevelIndicator(),
+                        ),
                         Text('OS Version: ${info.osVersion}'),
                         Text('Model: ${info.deviceModel}'),
                         Text('Manufacturer: ${info.manufacturer}'),
                         Text('Brand: ${info.brand}'),
                         Text('Android ID: ${info.androidId}'),
-                        Text('Battery Level: ${info.batteryLevel}'),
                         Text('Power Saving Mode: ${info.powerSavingMode}'),
                         Text('Language: ${info.language}'),
                         Text('Time Zone: ${info.timeZone}'),

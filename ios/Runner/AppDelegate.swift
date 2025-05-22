@@ -59,7 +59,7 @@ import Foundation
         controller.present(imagePicker!, animated: true)
     }
 
-    func imagePickerController(_ picker: UIImagePickerController,
+    func imagePickerContropller(_ picker: UIImagePickerController,
                                didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         picker.dismiss(animated: true)
 
