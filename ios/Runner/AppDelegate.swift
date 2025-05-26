@@ -6,8 +6,11 @@ import Foundation
 @main
 @objc class AppDelegate: FlutterAppDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
+
+
     private var flutterResult: FlutterResult?
     private var imagePicker: UIImagePickerController?
+    private var eventSink: FlutterEventSink?
 
     private let channelName = "com.example.platform_channels_poc"
 
@@ -15,6 +18,7 @@ import Foundation
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+    UIDevice.current.isBatteryMonitoringEnabled = true
         GeneratedPluginRegistrant.register(with: self)
         let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
         let methodChannel = FlutterMethodChannel(name: channelName, binaryMessenger: controller.binaryMessenger)
@@ -32,6 +36,11 @@ import Foundation
                 result(FlutterMethodNotImplemented)
             }
         })
+
+        let eventChannel = FlutterEventChannel(name: "com.example.batteryStream", binaryMessenger: controller.binaryMessenger)
+        eventChannel.setStreamHandler(self)
+
+
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
@@ -96,5 +105,32 @@ import Foundation
                                     message: "Selection was cancelled",
                                     details: nil))
         flutterResult = nil
+    }
+}
+
+extension AppDelegate: FlutterStreamHandler {
+    func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        eventSink = events
+
+        NotificationCenter.default.addObserver(
+            forName: UIDevice.batteryLevelDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            let level = Int(UIDevice.current.batteryLevel * 100)
+            self?.eventSink?(level)
+        }
+
+
+        let initialLevel = Int(UIDevice.current.batteryLevel * 100)
+        events(initialLevel)
+
+        return nil
+    }
+
+    func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        NotificationCenter.default.removeObserver(self, name: UIDevice.batteryLevelDidChangeNotification, object: nil)
+        eventSink = nil
+        return nil
     }
 }
