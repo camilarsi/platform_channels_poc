@@ -17,6 +17,8 @@ import io.flutter.plugin.common.MethodChannel
 import java.util.Locale
 import java.util.TimeZone
 import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.BasicMessageChannel
+import io.flutter.plugin.common.StandardMessageCodec
 
 class MainActivity : FlutterActivity() {
 
@@ -25,6 +27,8 @@ class MainActivity : FlutterActivity() {
     private var pendingResult: MethodChannel.Result? = null
     private var BATTERY_CHANNEL = "com.example.batteryStream"
     private var batteryReceiver: BroadcastReceiver? = null
+    private var THEME_MODE_CHANNEL = "theme_mode"
+    private var themeChannel: BasicMessageChannel<Any>? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -92,6 +96,23 @@ class MainActivity : FlutterActivity() {
 
                 }
             )
+
+
+        }
+        themeChannel = BasicMessageChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            THEME_MODE_CHANNEL,
+            StandardMessageCodec.INSTANCE
+        )
+
+        themeChannel?.setMessageHandler { message, reply ->
+
+            if (message == "getDarkModeStatus") {
+                val isDarkMode = isDeviceInDarkMode()
+                reply.reply(isDarkMode)
+            } else {
+                reply.reply(null)
+            }
         }
     }
 
@@ -132,5 +153,11 @@ class MainActivity : FlutterActivity() {
             }
         }
         return null
+    }
+
+    private fun isDeviceInDarkMode(): Boolean {
+        val currentNightMode =
+            resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
+        return currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
     }
 }

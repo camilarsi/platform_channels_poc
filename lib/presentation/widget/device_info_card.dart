@@ -6,9 +6,12 @@ import 'package:platform_channels_definitivo/data/repositories/device_info_repos
 import 'package:platform_channels_definitivo/domain/usecases/get_device_info_usecase.dart';
 import '../bloc/device_info_bloc.dart';
 import 'battery_level_indicator.dart';
+import 'dark_mode_switcher.dart';
 
 class DeviceInfoPage extends StatefulWidget {
-  const DeviceInfoPage({super.key});
+  const DeviceInfoPage({required this.isDarkMode, super.key});
+
+  final bool isDarkMode;
 
   @override
   State<DeviceInfoPage> createState() => _DeviceInfoPageState();
@@ -44,10 +47,21 @@ class _DeviceInfoPageState extends State<DeviceInfoPage> {
               padding: const EdgeInsets.all(16),
               children:
                   [
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 28.0),
-                          child: BatteryLevelIndicator(),
+                        SizedBox(
+                          height: 180,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 28.0),
+                                child: BatteryLevelIndicator(),
+                              ),
+                              DarkModeSwitcher(isDarkMode: widget.isDarkMode),
+                            ],
+                          ),
                         ),
+
                         Text('OS Version: ${info.osVersion}'),
                         Text('Model: ${info.deviceModel}'),
                         Text('Manufacturer: ${info.manufacturer}'),
