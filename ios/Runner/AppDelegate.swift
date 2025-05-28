@@ -13,6 +13,7 @@ import Foundation
     private var eventSink: FlutterEventSink?
 
     private let channelName = "com.example.platform_channels_poc"
+    private let themeChannelName = "theme_mode"
 
     override func application(
         _ application: UIApplication,
@@ -40,7 +41,20 @@ import Foundation
         let eventChannel = FlutterEventChannel(name: "com.example.batteryStream", binaryMessenger: controller.binaryMessenger)
         eventChannel.setStreamHandler(self)
 
+        let themeChannel = FlutterBasicMessageChannel (
+            name: themeChannelName,
+            binaryMessenger: controller.binaryMessenger,
+            codec: FlutterStandardMessageCodec.sharedInstance()
+        )
 
+        themeChannel.setMessageHandler{message, reply in
+            if let request = message as? String, request == "getDarkModeStatus"{
+                let isDarkMode = self.isDeviceInDarkMode()
+                reply(isDarkMode)
+            }else {
+                reply(nil)
+            }
+        }
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
@@ -105,6 +119,13 @@ import Foundation
                                     message: "Selection was cancelled",
                                     details: nil))
         flutterResult = nil
+    }
+
+    private  func isDeviceInDarkMode()-> Bool{
+        if let style = UIApplication.shared.windows.first?.traitCollection.userInterfaceStyle {
+            return style == .dark
+        }
+        return false
     }
 }
 
