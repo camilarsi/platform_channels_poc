@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:platform_channels_definitivo/presentation/widget/device_info_card.dart';
+import 'package:platform_channels_definitivo/presentation/widget/home_drawer.dart';
 import 'package:provider/provider.dart';
 
 import 'core/dependencies_injector.dart';
@@ -45,6 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         centerTitle: true,
       ),
+      drawer: HomeDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: DeviceInfoPage(),
