@@ -1,16 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:platform_channels_definitivo/presentation/bloc/theme_bloc.dart';
+import 'package:platform_channels_definitivo/presentation/widget/app_initializer.dart';
 import 'package:platform_channels_definitivo/presentation/widget/device_info_card.dart';
 import 'package:platform_channels_definitivo/presentation/widget/home_drawer.dart';
 import 'package:provider/provider.dart';
 
 import 'core/dependencies_injector.dart';
+import 'core/util/data_state.dart';
+
+Future<void> initializeDependencies(BuildContext context) async {
+  await Future.delayed(const Duration(seconds: 3));
+}
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  final themeModeDependenciesInjector = ThemeModeDependenciesInjector.instance;
+  runApp(AppInitializer(themeBloc: themeModeDependenciesInjector.themeBloc));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isDarkMode;
+
+  const MyApp({required this.isDarkMode, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,20 +29,31 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Platform Channels PoC',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.cyan,
+          brightness: Brightness.light,
+        ),
       ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.cyan,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: Provider<DependenciesInjector>(
         create: (_) => DependenciesInjector.instance,
-        child: const MyHomePage(title: 'Platform Channels PoC'),
+        child: MyHomePage(title: 'Device Info', isDarkMode: isDarkMode),
       ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({required this.isDarkMode, super.key, required this.title});
 
   final String title;
+  final bool isDarkMode;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -49,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
       drawer: HomeDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: DeviceInfoPage(),
+        child: DeviceInfoPage(isDarkMode: widget.isDarkMode),
       ),
     );
   }
